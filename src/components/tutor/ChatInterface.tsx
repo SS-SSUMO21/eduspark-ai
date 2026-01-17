@@ -1,34 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Sparkles, User, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
-
-const initialMessages: Message[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content:
-      "Hi! 👋 I'm your AI tutor. I'm here to help you learn anything! What subject would you like to explore today?",
-    timestamp: new Date(),
-  },
-];
+import { useTutorChat, Message } from "@/hooks/useTutorChat";
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const { messages, loading, sendMessage } = useTutorChat();
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [client, setClient] = useState<any>(null);
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,80 +18,12 @@ export function ChatInterface() {
     setFiles(selectedFiles);
   };
 
-  useEffect(() => {
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
-    });
-    const chatInstance = model.startChat();
-    setClient(chatInstance);
-  }, []);
-
   const handleSend = async () => {
-    if ((!input.trim() && files.length === 0) || loading || !client) return;
+    if ((!input.trim() && files.length === 0) || loading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input || `Attached ${files.length} file(s)`,
-      timestamp: new Date(),
-    };
-
-    setMessages([...messages, userMessage]);
-    const currentInput = input;
-    const currentFiles = [...files];
+    await sendMessage(input, files);
     setInput("");
     setFiles([]);
-    setLoading(true);
-
-    try {
-      const isFirstMessage = messages.length === 1;
-      const textPrompt = isFirstMessage
-        ? "You are an AI tutor. Help students learn by explaining concepts clearly and engagingly. Be helpful and patient. " +
-          (currentInput || "Please analyze the attached files.")
-        : currentInput || "Please analyze the attached files.";
-
-      const parts: any[] = [{ text: textPrompt }];
-
-      if (currentFiles.length > 0) {
-        const filePromises = currentFiles.map((file) => {
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const result = reader.result as string;
-              const data = result.split(",")[1];
-              resolve({ inlineData: { mimeType: file.type, data } });
-            };
-            reader.readAsDataURL(file);
-          });
-        });
-        const fileParts = await Promise.all(filePromises);
-        parts.push(...fileParts);
-      }
-
-      const result = await client.sendMessage(parts);
-      const response = result.response;
-      const text = response.text();
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: text,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
-      console.error("Error getting AI response:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
