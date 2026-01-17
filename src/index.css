@@ -168,7 +168,8 @@
 
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background: var(--gradient-primary);
+    background-image: var(--gradient-primary);
+    background-size: 100%;
   }
 }
 
