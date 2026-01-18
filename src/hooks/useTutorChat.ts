@@ -25,14 +25,19 @@ export function useTutorChat() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
-    });
-    const chatInstance = model.startChat();
-    setClient(chatInstance);
-    setReady(true);
-    console.log("Gemini client ready");
+    try {
+      const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-3-flash-preview",
+      });
+      const chatInstance = model.startChat();
+      setClient(chatInstance);
+      setReady(true);
+      console.log("Gemini client ready");
+    } catch (error) {
+      console.error("Error initializing Gemini client:", error);
+      setReady(false);
+    }
   }, []);
 
   const sendMessage = async (input: string, files: File[] = []) => {
