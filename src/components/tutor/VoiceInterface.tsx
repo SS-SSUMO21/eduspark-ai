@@ -100,6 +100,7 @@ export function VoiceInterface() {
   const [finalTranscript, setFinalTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
@@ -162,12 +163,23 @@ export function VoiceInterface() {
       !loading &&
       !isMuted
     ) {
-      setIsSpeaking(true);
+      setIsGeneratingVoice(true);
       const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
       const cleanText = stripMarkdown(latestMessage.content);
-      textToSpeech(cleanText, apiKey).then(() => {
-        setIsSpeaking(false);
-      });
+      textToSpeech(cleanText, apiKey)
+        .then(() => {
+          setIsGeneratingVoice(false);
+          setIsSpeaking(false);
+        })
+        .catch((error) => {
+          console.error("TTS failed:", error);
+          setIsGeneratingVoice(false);
+          setIsSpeaking(false);
+          // Show user they need to interact
+          alert(
+            "Audio playback blocked. Please click the microphone button again to enable voice responses.",
+          );
+        });
     }
   }, [messages, loading, isMuted]);
 
@@ -264,12 +276,20 @@ export function VoiceInterface() {
           (isSpeaking && messages.length > 1)) && (
           <div className="bg-black/80 text-white p-4 rounded-lg mb-4 text-center">
             <div className="text-sm text-gray-300 mb-1">
-              {isListening ? "You" : isSpeaking ? "AI" : "Transcript"}
+              {isListening
+                ? "You"
+                : isGeneratingVoice
+                  ? "AI"
+                  : isSpeaking
+                    ? "AI"
+                    : "Transcript"}
             </div>
             <p className="text-xl font-medium">
-              {isSpeaking && messages.length > 1
-                ? stripMarkdown(messages[messages.length - 1].content)
-                : finalTranscript || interimTranscript}
+              {isGeneratingVoice
+                ? "Generating voice..."
+                : isSpeaking && messages.length > 1
+                  ? stripMarkdown(messages[messages.length - 1].content)
+                  : finalTranscript || interimTranscript}
               {interimTranscript && !finalTranscript && (
                 <span className="animate-pulse">...</span>
               )}
