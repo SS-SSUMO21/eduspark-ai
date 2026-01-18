@@ -155,13 +155,14 @@ export function VoiceInterface() {
   }, []);
 
   useEffect(() => {
-    // Play TTS for the latest AI message
+    // Play TTS for the latest AI message (skip initial welcome message to avoid autoplay block)
     const latestMessage = messages[messages.length - 1];
     if (
       latestMessage &&
       latestMessage.role === "assistant" &&
       !loading &&
-      !isMuted
+      !isMuted &&
+      latestMessage.id !== "1"
     ) {
       setIsGeneratingVoice(true);
       const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
@@ -176,9 +177,6 @@ export function VoiceInterface() {
           setIsGeneratingVoice(false);
           setIsSpeaking(false);
           // Show user they need to interact
-          alert(
-            "Audio playback blocked. Please click the microphone button again to enable voice responses.",
-          );
         });
     }
   }, [messages, loading, isMuted]);

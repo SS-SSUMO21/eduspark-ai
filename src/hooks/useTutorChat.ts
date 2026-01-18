@@ -26,16 +26,20 @@ export function useTutorChat() {
 
   useEffect(() => {
     try {
-      const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("VITE_GEMINI_API_KEY environment variable is not set");
+      }
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
       });
       const chatInstance = model.startChat();
       setClient(chatInstance);
       setReady(true);
-      console.log("Gemini client ready");
+      console.log("✓ Gemini AI client initialized successfully with gemini-2.5-flash");
     } catch (error) {
-      console.error("Error initializing Gemini client:", error);
+      console.error("✗ Error initializing Gemini AI client:", error);
       setReady(false);
     }
   }, []);
@@ -58,13 +62,9 @@ export function useTutorChat() {
     setLoading(true);
 
     try {
-      const isFirstMessage = messages.length === 1;
-      const textPrompt = isFirstMessage
-        ? "You are an AI tutor. Help students learn by explaining concepts clearly and engagingly. Be helpful and patient. " +
-          (input || "Please analyze the attached files.")
-        : input || "Please analyze the attached files.";
-
-      const parts: any[] = [{ text: textPrompt }];
+      // Send user input with system instruction to Gemini AI
+      const systemInstruction = "You are an AI tutor. Help students learn by explaining concepts clearly and engagingly. Be helpful, patient, and encouraging.";
+      const parts: any[] = [{ text: `${systemInstruction}\n\nStudent: ${input}` }];
 
       if (files.length > 0) {
         const filePromises = files.map((file) => {
@@ -82,10 +82,20 @@ export function useTutorChat() {
         parts.push(...fileParts);
       }
 
+      console.log("Sending request to Gemini AI:", { parts, clientReady: !!client });
       const result = await client.sendMessage(parts);
+      console.log("Raw response object:", result);
+      
       const response = result.response;
-      const text = response.text();
-      console.log("AI response:", text);
+      console.log("Response object:", response);
+      
+      const text = response?.text?.();
+      console.log("Extracted text:", text, "Type:", typeof text, "Length:", text?.length);
+
+      if (!text || text.trim() === "") {
+        console.warn("AI response is empty or undefined");
+        throw new Error("AI returned an empty response");
+      }
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -93,13 +103,18 @@ export function useTutorChat() {
         content: text,
         timestamp: new Date(),
       };
+      console.log("Adding AI message to state:", aiMessage);
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error getting AI response:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
+        content: `Error: ${error instanceof Error ? error.message : "Unknown error occurred"}. Please try again.`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
