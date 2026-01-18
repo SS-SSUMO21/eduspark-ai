@@ -1,20 +1,24 @@
-import { 
-  Sparkles, 
-  LayoutDashboard, 
-  Mic, 
-  BookOpen, 
+import {
+  Sparkles,
+  Home,
+  LayoutDashboard,
+  Mic,
+  BookOpen,
   FileText,
   Gamepad2,
   Trophy,
   Settings,
   LogOut,
-  ChevronLeft
+  ChevronLeft,
+  Moon,
+  Sun
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const menuItems = [
+  { icon: Home, label: "Home", path: "/" },
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Mic, label: "AI Tutor", path: "/dashboard/tutor" },
   { icon: BookOpen, label: "Lessons", path: "/dashboard/lessons" },
@@ -25,8 +29,20 @@ const menuItems = [
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    setDarkMode(isDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
 
   return (
     <aside className={cn(
@@ -35,12 +51,15 @@ export function DashboardSidebar() {
     )}>
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className="flex items-center gap-3 p-4 border-b border-border">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-3 p-4 border-b border-border w-full text-left hover:bg-muted/50 transition-colors"
+        >
           <div className="p-2 gradient-primary rounded-lg shrink-0">
             <Sparkles className="w-5 h-5 text-primary-foreground" />
           </div>
           {!collapsed && <span className="text-xl font-bold">StudyBuddy</span>}
-        </div>
+        </button>
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
@@ -67,6 +86,14 @@ export function DashboardSidebar() {
         {/* Bottom Actions */}
         <div className="p-4 border-t border-border space-y-2">
           <button
+            onClick={toggleDarkMode}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+          >
+            {darkMode ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
+            {!collapsed && <span className="font-medium">Toggle Theme</span>}
+          </button>
+          <button
+            onClick={() => navigate("/dashboard/settings")}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
           >
             <Settings className="w-5 h-5 shrink-0" />

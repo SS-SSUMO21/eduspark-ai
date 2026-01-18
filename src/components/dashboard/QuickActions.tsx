@@ -1,26 +1,33 @@
-import { Mic, FileUp, Brain, Gamepad2 } from "lucide-react";
+import { Mic, FileUp, Brain, Gamepad2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const actions = [
+  {
+    icon: Plus,
+    label: "Add Subject",
+    description: "Add a new subject to study",
+    path: "/dashboard/lessons",
+    gradient: "gradient-primary"
+  },
   {
     icon: Mic,
     label: "Start Voice Lesson",
     description: "Learn through conversation",
     path: "/dashboard/tutor",
-    gradient: "gradient-primary"
+    gradient: "gradient-warm"
   },
   {
     icon: FileUp,
     label: "Upload Document",
     description: "Summarize notes or PDFs",
     path: "/dashboard/documents",
-    gradient: "gradient-warm"
+    gradient: "bg-success"
   },
   {
     icon: Brain,
     label: "Practice Quiz",
     description: "Test your knowledge",
-    path: "/dashboard/games",
+    path: "/dashboard/practice-quiz",
     gradient: "gradient-success"
   },
   {
@@ -36,7 +43,7 @@ export function QuickActions() {
   const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
       {actions.map((action) => (
         <button
           key={action.label}

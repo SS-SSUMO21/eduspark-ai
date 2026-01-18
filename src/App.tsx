@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import Lessons from "./pages/Lessons";
+import Achievements from "./pages/Achievements";
+import Settings from "./pages/Settings";
+import PracticeQuiz from "./pages/PracticeQuiz";
 import Tutor from "./pages/Tutor";
 import Documents from "./pages/Documents";
 import Games from "./pages/Games";
@@ -24,8 +28,10 @@ const App = () => (
           <Route path="/dashboard/tutor" element={<Tutor />} />
           <Route path="/dashboard/documents" element={<Documents />} />
           <Route path="/dashboard/games" element={<Games />} />
-          <Route path="/dashboard/lessons" element={<Dashboard />} />
-          <Route path="/dashboard/achievements" element={<Dashboard />} />
+          <Route path="/dashboard/practice-quiz" element={<PracticeQuiz />} />
+          <Route path="/dashboard/lessons" element={<Lessons />} />
+          <Route path="/dashboard/achievements" element={<Achievements />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

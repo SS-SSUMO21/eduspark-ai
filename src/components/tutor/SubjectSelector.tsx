@@ -1,12 +1,13 @@
-import { 
-  Calculator, 
-  Atom, 
-  Globe, 
-  BookText, 
+import {
+  Calculator,
+  Atom,
+  Globe,
+  BookText,
   Palette,
   Code,
   Languages,
-  Music
+  Music,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,16 @@ export function SubjectSelector({ selected, onSelect }: SubjectSelectorProps) {
             <span className="text-sm font-medium">{subject.name}</span>
           </button>
         ))}
+        <button
+          onClick={() => {
+            // TODO: Open add subject dialog or navigate to add subject page
+            console.log("Add subject clicked");
+          }}
+          className="flex items-center gap-2 px-3 py-2 rounded-full border border-dashed border-muted-foreground/30 text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-200"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="text-sm font-medium">Add Subject</span>
+        </button>
       </div>
     </div>
   );
